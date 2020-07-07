@@ -1,0 +1,17 @@
+#  ignore PhpStorm project directory
+.idea/*
+
+#  ignore npm/node package directory - dependencies given in package.json
+node_modules/*
+
+#  ignore user data files
+data/*
+
+#  ignore log files
+log/*
+
+#  ignore PDFs
+*.pdf
+
+# ignore icons that have not been manually added
+app/img/*
