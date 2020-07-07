@@ -12,7 +12,10 @@ export default class ChessBoard {
         this.ctx = canvas.getContext('2d');
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
+        canvas.addEventListener('mousemove', this.setMouseTarget.bind(this));
 
+        this.mouseTarget = false;
+        this.needsRedraw = false;
 
         this.pieces = {
             white: [],
@@ -39,10 +42,62 @@ export default class ChessBoard {
             }
         }
 
-        this.draw();
+        this.draw(true);
     }
 
-    draw() {
+    setMouseTarget(ev) {
+        let [x, y] = [
+            ev.clientX - this.ctx.canvas.offsetLeft,
+            ev.clientY - this.ctx.canvas.offsetTop
+        ];
+
+
+        //  if a target is already designated, check it first
+        //  (avoids needless looping in the common scenario where new target
+        //  is same as existing target)
+        if(this.mouseTarget && this.mouseTarget.hit(x, y)) {
+            //  nothing to see here, move along...
+            return;
+        }
+
+        let target = false;
+        for(let i = 0; i < this.grid.length; ++i) {
+            for(let j = 0; j < this.grid.length; ++j) {
+                if(this.grid[i][j].hit(x, y)) {
+                    target = this.grid[i][j];
+                    break;
+                }
+            }
+        }
+
+        //  if a target is already designated, it is not the same as the new
+        //  target and so must be deactivated (regardless of whether or not a
+        //  new target was found)
+        if(this.mouseTarget) {
+            this.mouseTarget.isMouseTarget = false;
+            this.mouseTarget = false;
+            this.needsRedraw = true;
+        }
+
+        //  if a new target was found, activate it
+        if(target) {
+            this.mouseTarget = target;
+            target.isMouseTarget = true;
+            this.needsRedraw = true;
+        }
+
+        //  this does not belong here
+        this.draw();
+
+        //  return the new target, or false if no target was found
+        return target;
+    }
+
+    draw(force = false) {
+
+        if(!this.needsRedraw && !force) {
+            return;
+        }
 
         const bSize = ChessBoard.size;
         const cCount = ChessBoard.cellCount;
@@ -62,6 +117,8 @@ export default class ChessBoard {
                 this.grid[i][j].draw(ctx);
             }
         }
+
+        this.needsRedraw = false;
     }
 }
 
@@ -86,10 +143,21 @@ class GridCell {
         const x0 = GridCell.baseOffset + (GridCell.interval) * column;
         const y0 = GridCell.baseOffset + (GridCell.interval) * (ChessBoard.cellCount - rank - 1);
         this.bb = [x0, y0, x0 + GridCell.size, y0 + GridCell.size];
+
+        this.isMouseTarget = false;
+    }
+
+    hit(x, y) {
+        return x > this.bb[0] && y > this.bb[1] && x < this.bb[2] && y < this.bb[3];
     }
 
     draw(ctx) {
-        ctx.fillStyle = '#ffffff';
+        if(this.isMouseTarget) {
+            ctx.fillStyle = '#ffbbbb';
+        }
+        else {
+            ctx.fillStyle = '#ffffff';
+        }
         ctx.fillRect(this.bb[0], this.bb[1], GridCell.size, GridCell.size);
     }
 }
