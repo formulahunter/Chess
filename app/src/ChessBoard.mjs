@@ -37,10 +37,21 @@ export default class ChessBoard {
 
     init() {
 
-        let kingW = new ChessPiece(ChessPiece.TYPE[0], 'W');
-        this.grid[0][4].setPiece(kingW);
-        this.pieces.white.push(kingW);
-        let srcLoads = [kingW.srcLoad];
+        let newGameRanks = [
+            [2, 3, 4, 1, 0, 4, 3, 2],
+            [5, 5, 5, 5, 5, 5, 5, 5]
+        ];
+        let srcLoads = [];
+        let front, back;
+        for(let i = 0; i < newGameRanks[0].length; ++i) {
+            front = new ChessPiece(ChessPiece.TYPE[newGameRanks[0][i]], 'W');
+            srcLoads.push(front.srcLoad);
+            this.grid[0][i].setPiece(front);
+
+            back = new ChessPiece(ChessPiece.TYPE[newGameRanks[1][i]], 'W');
+            srcLoads.push(back.srcLoad);
+            this.grid[1][i].setPiece(back);
+        }
         srcLoads.map(prms => prms.then(() => {
             this.needsRedraw = true;
             this.draw();
