@@ -12,10 +12,10 @@ export default class ChessPiece {
         'PAWN'
     ];
 
-    constructor(type, color, cell) {
+    constructor(type, color) {
         this.type = type;
         this.color = color;
-        this.cell = cell;
+        this.cell = false;
 
         let icon = this.icon = document.createElement('img');
         icon.width = 50;
@@ -47,8 +47,9 @@ function drawSource(ctx, force = false) {
         return;
     }
 
-    //  if this piece is not on the board, it's cell will be undefined
+    //  if this piece is not on the board, it's cell will be 'false'
     if(!this.cell) {
+        console.warn(`cannot draw ${this.type} with no cell defined`);
         return;
     }
 
@@ -62,6 +63,12 @@ function drawSource(ctx, force = false) {
 function drawNoSource(ctx, force = false) {
 
     if(!this.needsRedraw && !force) {
+        return;
+    }
+
+    //  if this piece is not on the board, it's cell will be 'false'
+    if(!this.cell) {
+        console.warn(`cannot draw ${this.type} with no cell defined`);
         return;
     }
 

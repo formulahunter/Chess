@@ -6,10 +6,16 @@ export default class ChessBoard {
 
     constructor(canvas) {
 
-        this.ctx = canvas.getContext('2d');
+        const ctx = this.ctx = canvas.getContext('2d');
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
         canvas.addEventListener('mousemove', this.setMouseTarget.bind(this));
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, CONST.boardSize, CONST.boardSize);
+        ctx.fillStyle = '#000000';   //  white cells will leave black grid
+        // lines
+        ctx.fillRect(CONST.boardMargin, CONST.boardMargin, CONST.gridSize, CONST.gridSize);
 
         this.mouseTarget = false;
         this.needsRedraw = false;
@@ -31,7 +37,8 @@ export default class ChessBoard {
 
     init() {
 
-        let kingW = new ChessPiece(ChessPiece.TYPE[0], 'W', this.grid[0][4]);
+        let kingW = new ChessPiece(ChessPiece.TYPE[0], 'W');
+        this.grid[0][4].setPiece(kingW);
         this.pieces.white.push(kingW);
         let srcLoads = [kingW.srcLoad];
         srcLoads.map(prms => prms.then(() => {
@@ -71,6 +78,7 @@ export default class ChessBoard {
         //  new target was found)
         if(this.mouseTarget) {
             this.mouseTarget.isMouseTarget = false;
+            this.mouseTarget.needsRedraw = true;
             this.mouseTarget = false;
             this.needsRedraw = true;
         }
@@ -79,6 +87,7 @@ export default class ChessBoard {
         if(target) {
             this.mouseTarget = target;
             target.isMouseTarget = true;
+            target.needsRedraw = true;
             this.needsRedraw = true;
         }
 
@@ -96,22 +105,9 @@ export default class ChessBoard {
         }
 
         const ctx = this.ctx;
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, CONST.boardSize, CONST.boardSize);
-        ctx.fillStyle = '#000000';   //  white cells will leave black grid
-        // lines
-        ctx.fillRect(CONST.boardMargin, CONST.boardMargin, CONST.gridSize, CONST.gridSize);
-
         for(let i = 0; i < CONST.cellCount; ++i) {
             for(let j = 0; j < CONST.cellCount; ++j) {
-                this.grid[j][i].draw(ctx);
-            }
-        }
-
-        for(let color of Object.keys(this.pieces)) {
-            const pieces = this.pieces[color];
-            for(let i = 0; i < pieces.length; ++i) {
-                pieces[i].draw(ctx);
+                this.grid[j][i].draw(ctx, force);
             }
         }
 
@@ -134,14 +130,42 @@ class GridCell {
         const y0 = CONST.cellBaseOffset + (CONST.cellInterval) * (CONST.cellCount - rank - 1);
         this.bb = [x0, y0, x0 + CONST.cellSize, y0 + CONST.cellSize];
 
+        this.piece = false;
         this.isMouseTarget = false;
+        this.needsRedraw = false;
     }
 
     hit(x, y) {
         return x > this.bb[0] && y > this.bb[1] && x < this.bb[2] && y < this.bb[3];
     }
 
-    draw(ctx) {
+    setPiece(piece) {
+        if(this.piece) {
+            if(this.piece === piece) {
+                console.warn(`piece set redundantly on ${this.index}`);
+                return;
+            }
+            throw new Error(`cannot add multiple pieces on ${this.index}`);
+        }
+
+        if(piece.cell) {
+            piece.cell.unsetPiece();
+        }
+        this.piece = piece;
+        this.piece.cell = this;
+        this.needsRedraw = true;
+    }
+    unsetPiece() {
+        this.piece.cell = false;
+        this.piece = false;
+    }
+
+    draw(ctx, force = false) {
+
+        if(!this.needsRedraw && !force) {
+            return;
+        }
+
         if(this.isMouseTarget) {
             ctx.fillStyle = '#ffbbbb';
         }
@@ -149,5 +173,9 @@ class GridCell {
             ctx.fillStyle = '#ffffff';
         }
         ctx.fillRect(this.bb[0], this.bb[1], CONST.cellSize, CONST.cellSize);
+
+        if(this.piece) {
+            this.piece.draw(ctx, force);
+        }
     }
 }
