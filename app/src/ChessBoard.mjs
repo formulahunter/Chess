@@ -1,4 +1,5 @@
 import * as CONST from './constants.mjs';
+import ChessPiece from './ChessPiece.mjs';
 
 
 export default class ChessBoard {
@@ -23,13 +24,20 @@ export default class ChessBoard {
         for(let i = 0; i < CONST.cellCount; ++i) {
             this.grid[i] = [];
             for(let j = 0; j < CONST.cellCount; ++j) {
-                this.grid[i][j] = new GridCell(i, j);
+                this.grid[i][j] = new GridCell(j, i);
             }
         }
     }
 
     init() {
 
+        let kingW = new ChessPiece(ChessPiece.TYPE[0], 'W', this.grid[0][4]);
+        this.pieces.white.push(kingW);
+        let srcLoads = [kingW.srcLoad];
+        srcLoads.map(prms => prms.then(() => {
+            this.needsRedraw = true;
+            this.draw();
+        }));
         this.draw(true);
     }
 
@@ -96,7 +104,14 @@ export default class ChessBoard {
 
         for(let i = 0; i < CONST.cellCount; ++i) {
             for(let j = 0; j < CONST.cellCount; ++j) {
-                this.grid[i][j].draw(ctx);
+                this.grid[j][i].draw(ctx);
+            }
+        }
+
+        for(let color of Object.keys(this.pieces)) {
+            const pieces = this.pieces[color];
+            for(let i = 0; i < pieces.length; ++i) {
+                pieces[i].draw(ctx);
             }
         }
 
