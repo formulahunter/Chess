@@ -191,10 +191,10 @@ class GridCell {
         }
 
         if(this.isMouseTarget) {
-            ctx.fillStyle = '#ffbbbb';
+            ctx.fillStyle = CONST.targetCell;
         }
         else {
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = CONST.emptyCell;
         }
         ctx.fillRect(this.bb[0], this.bb[1], CONST.cellSize, CONST.cellSize);
 

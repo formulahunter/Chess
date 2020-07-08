@@ -15,6 +15,10 @@ const cellInterval = cellSize + gridWidth;
 /** for converting between number & text formats */
 const columnLabels = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
+/** interactive cell colors */
+const emptyCell = 'white';
+const targetCell = 'hsl(0deg, 0%, 90%)';
+
 
 export {
     boardSize,
@@ -25,5 +29,7 @@ export {
     cellSize,
     cellBaseOffset,
     cellInterval,
-    columnLabels
+    columnLabels,
+    emptyCell,
+    targetCell
 };
