@@ -18,6 +18,8 @@ const columnLabels = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 /** interactive cell colors */
 const emptyCell = 'white';
 const targetCell = 'hsl(0deg, 0%, 90%)';
+const activeCell = 'hsl(240deg, 35%, 90%)';
+const activeTargetCell = 'hsl(240deg, 35%, 85%)';
 
 
 export {
@@ -31,5 +33,7 @@ export {
     cellInterval,
     columnLabels,
     emptyCell,
-    targetCell
+    targetCell,
+    activeCell,
+    activeTargetCell
 };

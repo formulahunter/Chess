@@ -10,6 +10,7 @@ export default class ChessBoard {
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
         canvas.addEventListener('mousemove', this.setMouseTarget.bind(this));
+        canvas.addEventListener('click', this.activateTarget.bind(this));
 
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, CONST.boardSize, CONST.boardSize);
@@ -18,6 +19,7 @@ export default class ChessBoard {
         ctx.fillRect(CONST.boardMargin, CONST.boardMargin, CONST.gridSize, CONST.gridSize);
 
         this._mouseTarget = false;
+        this._activeCell = false;
         this.needsRedraw = false;
 
         this.pieces = {
@@ -87,6 +89,25 @@ export default class ChessBoard {
         this.needsRedraw = true;
     }
 
+    get activeCell() {
+        return this._activeCell;
+    }
+    set activeCell(cell) {
+
+        if(this._activeCell) {
+            this._activeCell.isActiveCell = false;
+            this._activeCell.needsRedraw = true;
+            this._activeCell = false;
+        }
+
+        if(cell) {
+            cell.isActiveCell = true;
+            cell.needsRedraw = true;
+        }
+        this._activeCell = cell;
+        this.needsRedraw = true;
+    }
+
     checkMousePosition(ev) {
         let [x, y] = [
             ev.clientX - this.ctx.canvas.offsetLeft,
@@ -119,6 +140,25 @@ export default class ChessBoard {
         this.mouseTarget = this.checkMousePosition(ev);
 
         //  this does not belong here
+        this.draw();
+    }
+    /** assumes the assigned target is valid */
+    activateTarget(ev) {
+        if(!this.mouseTarget) {
+            //  do not deactivate the active cell (if assigned)
+            //  this allows for possible future UI that will not interrupt
+            //  a move/turn in progress
+            return;
+        }
+
+        //  de/activate the current target
+        if(this.activeCell === this.mouseTarget) {
+            this.activeCell = false;
+        }
+        else {
+            this.activeCell = this.mouseTarget;
+        }
+
         this.draw();
     }
 
@@ -156,6 +196,7 @@ class GridCell {
 
         this.piece = false;
         this.isMouseTarget = false;
+        this.isActiveCell = false;
         this.needsRedraw = false;
     }
 
@@ -190,7 +231,15 @@ class GridCell {
             return;
         }
 
-        if(this.isMouseTarget) {
+        if(this.isActiveCell) {
+            if(this.isMouseTarget) {
+                ctx.fillStyle = CONST.activeTargetCell;
+            }
+            else {
+                ctx.fillStyle = CONST.activeCell;
+            }
+        }
+        else if(this.isMouseTarget) {
             ctx.fillStyle = CONST.targetCell;
         }
         else {
