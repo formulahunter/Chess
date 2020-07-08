@@ -59,7 +59,7 @@ export default class ChessBoard {
         this.draw(true);
     }
 
-    setMouseTarget(ev) {
+    checkMousePosition(ev) {
         let [x, y] = [
             ev.clientX - this.ctx.canvas.offsetLeft,
             ev.clientY - this.ctx.canvas.offsetTop
@@ -71,7 +71,7 @@ export default class ChessBoard {
         //  is same as existing target)
         if(this.mouseTarget && this.mouseTarget.hit(x, y)) {
             //  nothing to see here, move along...
-            return;
+            return this.mouseTarget;
         }
 
         let target = false;
@@ -83,6 +83,13 @@ export default class ChessBoard {
                 }
             }
         }
+
+        //  return the new target, or false if no target was found
+        return target;
+    }
+    setMouseTarget(ev) {
+
+        let target = this.checkMousePosition(ev);
 
         //  if a target is already designated, it is not the same as the new
         //  target and so must be deactivated (regardless of whether or not a
@@ -96,17 +103,14 @@ export default class ChessBoard {
 
         //  if a new target was found, activate it
         if(target) {
-            this.mouseTarget = target;
             target.isMouseTarget = true;
             target.needsRedraw = true;
+            this.mouseTarget = target;
             this.needsRedraw = true;
         }
 
         //  this does not belong here
         this.draw();
-
-        //  return the new target, or false if no target was found
-        return target;
     }
 
     draw(force = false) {
