@@ -17,7 +17,7 @@ export default class ChessBoard {
         // lines
         ctx.fillRect(CONST.boardMargin, CONST.boardMargin, CONST.gridSize, CONST.gridSize);
 
-        this.mouseTarget = false;
+        this._mouseTarget = false;
         this.needsRedraw = false;
 
         this.pieces = {
@@ -59,19 +59,46 @@ export default class ChessBoard {
         this.draw(true);
     }
 
+    get mouseTarget() {
+        return this._mouseTarget;
+    }
+    /** automatically configures the new target as well as any previously
+     * assigned target
+     */
+    set mouseTarget(target) {
+
+        //  if a target is already designated, it is not the same as the new
+        //  target and so must be deactivated (regardless of whether or not a
+        //  new target was found)
+        if(this._mouseTarget) {
+            this._mouseTarget.isMouseTarget = false;
+            this._mouseTarget.needsRedraw = true;
+            this._mouseTarget = false;
+        }
+
+        //  if a new target is being assigned, mark it active
+        if(target) {
+            target.isMouseTarget = true;
+            target.needsRedraw = true;
+        }
+
+        //  assign the new value and flag redraw
+        this._mouseTarget = target;
+        this.needsRedraw = true;
+    }
+
     checkMousePosition(ev) {
         let [x, y] = [
             ev.clientX - this.ctx.canvas.offsetLeft,
             ev.clientY - this.ctx.canvas.offsetTop
         ];
 
-
         //  if a target is already designated, check it first
         //  (avoids needless looping in the common scenario where new target
         //  is same as existing target)
-        if(this.mouseTarget && this.mouseTarget.hit(x, y)) {
+        if(this._mouseTarget && this._mouseTarget.hit(x, y)) {
             //  nothing to see here, move along...
-            return this.mouseTarget;
+            return this._mouseTarget;
         }
 
         let target = false;
@@ -89,25 +116,7 @@ export default class ChessBoard {
     }
     setMouseTarget(ev) {
 
-        let target = this.checkMousePosition(ev);
-
-        //  if a target is already designated, it is not the same as the new
-        //  target and so must be deactivated (regardless of whether or not a
-        //  new target was found)
-        if(this.mouseTarget) {
-            this.mouseTarget.isMouseTarget = false;
-            this.mouseTarget.needsRedraw = true;
-            this.mouseTarget = false;
-            this.needsRedraw = true;
-        }
-
-        //  if a new target was found, activate it
-        if(target) {
-            target.isMouseTarget = true;
-            target.needsRedraw = true;
-            this.mouseTarget = target;
-            this.needsRedraw = true;
-        }
+        this.mouseTarget = this.checkMousePosition(ev);
 
         //  this does not belong here
         this.draw();
