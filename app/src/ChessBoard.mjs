@@ -95,12 +95,26 @@ export default class ChessBoard {
     set activeCell(cell) {
 
         if(this._activeCell) {
+            if(this._activeCell.piece) {
+                let moves = this._activeCell.piece.possibleMoves;
+                for(let i = 0; i < moves.length; ++i) {
+                    this.grid[moves[i][1]][moves[i][0]].isDestination = false;
+                    this.grid[moves[i][1]][moves[i][0]].needsRedraw = true;
+                }
+            }
             this._activeCell.isActiveCell = false;
             this._activeCell.needsRedraw = true;
             this._activeCell = false;
         }
 
         if(cell) {
+            if(cell.piece) {
+                let moves = cell.piece.possibleMoves;
+                for(let i = 0; i < moves.length; ++i) {
+                    this.grid[moves[i][1]][moves[i][0]].isDestination = true;
+                    this.grid[moves[i][1]][moves[i][0]].needsRedraw = true;
+                }
+            }
             cell.isActiveCell = true;
             cell.needsRedraw = true;
         }
@@ -197,6 +211,7 @@ class GridCell {
         this.piece = false;
         this.isMouseTarget = false;
         this.isActiveCell = false;
+        this.isDestination = false;
         this.needsRedraw = false;
     }
 
@@ -238,6 +253,9 @@ class GridCell {
             else {
                 ctx.fillStyle = CONST.activeCell;
             }
+        }
+        else if(this.isDestination) {
+            ctx.fillStyle = CONST.destination;
         }
         else if(this.isMouseTarget) {
             ctx.fillStyle = CONST.targetCell;
